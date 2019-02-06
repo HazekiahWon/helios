@@ -1,6 +1,7 @@
 from common_imports import *
 from PIL import Image
-from scipy.misc import toimage,fromimage
+from scipy.misc import toimage,fromimage,imread,imsave
+from scipy.ndimage import zoom
 ycbcr_from_rgb = np.array([[    65.481,   128.553,    24.966],
                            [   -37.797,   -74.203,   112.0  ],
                            [   112.0  ,   -93.786,   -18.214]])/255.
@@ -90,7 +91,7 @@ def uint8_to_float(tensor, dtype):
     return tf.image.convert_image_dtype(tensor,dtype)
 
 
-def imresize(arr, size, interp='bicubic', set_int=True, save_path=None):
+def resize_image(arr, size, interp='bicubic', set_int=True, save_path=None):
     """
     Resize an image.
     This function is only available if Python Imaging Library (PIL) is installed.
@@ -132,7 +133,7 @@ def imresize(arr, size, interp='bicubic', set_int=True, save_path=None):
             logging.warning('set_int is set True when saving images')
             set_int = True
 
-    mode = 'L' if set_int else 'F'
+    mode = 'F' if not set_int and len(arr.shape)==2 else None
     im = toimage(arr, mode=mode) # PIL.Image
 
     func = {'nearest': 0, 'lanczos': 1, 'bilinear': 2, 'bicubic': 3, 'cubic': 3}
@@ -141,3 +142,22 @@ def imresize(arr, size, interp='bicubic', set_int=True, save_path=None):
     if save_path is not None:
         imnew.save(save_path)
     return fromimage(imnew)
+
+# def batch_image_resize(arr, size, interp='bicubic', set_int=True):
+#     """
+#
+#     :param arr: b,hwc
+#     :param size:
+#     :param interp:
+#     :param set_int:
+#     :return:
+#     """
+#     func = {'nearest': 0, 'bilinear': 1, 'bicubic': 3, 'cubic': 3}
+#     dtype = np.int32 if set_int else np.float32
+#     return zoom(arr, [1]+list(size)+[1], output=dtype, order=func[interp])
+
+def read_image(path):
+    return imread(path)
+
+def save_image(path, im):
+    imsave(path, im)
