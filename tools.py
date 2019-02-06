@@ -1,5 +1,4 @@
-import tensorflow as tf
-
+from common_imports import *
 
 def adjustible_gradient_clipping(optimizer, starter_lr, lr, loss, vars, max_norm):
     # TODO i just cancel the start_lr*
@@ -98,3 +97,15 @@ def get_available_gpus():
     from tensorflow.python.client import device_lib
     local_device_protos = device_lib.list_local_devices()
     return [x.name for x in local_device_protos if x.device_type == 'GPU']
+
+def get_shape(tensor):
+    shape = tensor.get_shape()
+    shape_list = shape.as_list()
+    if not shape.is_fully_defined(): # find out which is not defined
+        shape_arr = np.asarray(shape_list)
+        indices = np.where(shape_arr==None)[0] # the indices are 1-d
+        shape = tf.shape(tensor)
+        for idx in indices:
+            shape_list[idx] = shape[idx]
+
+    return shape_list

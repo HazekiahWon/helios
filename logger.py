@@ -1,5 +1,4 @@
-import logging
-# import os
+from common_imports import *
 
 class Logger:
     def __init__(self):
