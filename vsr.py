@@ -39,4 +39,3 @@ def detailize_data_file(file_path, save_path, level=2): # specific for edvsr
     for i in range(level):
         df[f'level_{i}'] = df['path'].map(lambda x: x.split(r'/')[-3+i])
     df.to_csv(save_path, index=False)
-

@@ -1,6 +1,44 @@
-import sys
+from common_imports import *
+# import sys
 print(sys.path)
 import data,vsr
+def filter_ds(paths, seq_len, amp=4.):
+    read_path,val_path,train_path = paths
+    df = pd.read_csv(read_path, header=None)
+    df.columns = ['vidname'] + [f'frame_{i}' for i in range(seq_len)] + ['len', 'psnr', 'mse']
+    ser = df.groupby('vidname').psnr.mean()
+    df2 = pd.DataFrame(dict(vidname=ser.index, psnr=ser.values))
+    df2.sort_values('psnr',inplace=True) # vidname,psnr
+    df = df2[df2.psnr<=36]
+
+    df['name'] = df['vidname'].map(lambda x:x[0] if len(x)<=2 else x[:-5])
+
+    r2n = df.name.value_counts(sort=True, ascending=True).index
+    n2r = {n:r for r,n in enumerate(r2n)}
+    df['r_score'] = df['name'].map(lambda x: amp*n2r[x]/(len(r2n)-1))
+    df['score'] = df['r_score']+df['psnr']
+
+    df = df.sort_values('score')
+    df.to_csv('diversity_considered.csv', index=False)
+
+    dft = df.name.map(lambda x: x.find('Venice') != -1 or x.find('India') != -1)
+    ind = df[dft].index
+    dind = np.random.choice(ind, len(ind) // 2, replace=False)
+    df = df.drop(index=dind)
+
+    df2 = df
+    # df2.to_csv('vid_rank.csv',index=False)
+    # cumean = df2.expanding(1).mean()
+    selected = df2[:230]
+    print(selected.name.unique().shape)
+    val_indices = np.random.choice(selected.index, 30, replace=False)
+    train_indices = list(set(selected.index)-set(val_indices))
+    val_set = df2.loc[val_indices]
+    train_set = df2.loc[train_indices]
+    val_set.to_csv(val_path,index=False)
+    train_set.to_csv(train_path, index=False)
+    print(f'trainset psnr {train_set.psnr.mean()}, valset psnr {val_set.psnr.mean()}')
+
 if __name__ == '__main__':
 
     # a_fmt = r'/usr/whz/EDVSRGAN_root/VSR-DUF-master/inputs/G/{}/*.png'
@@ -25,5 +63,12 @@ if __name__ == '__main__':
     # # ds_running_template(it, graph_fn, iter_fn)
     # a, b = [x.get_next() for x in it]
     # print(a.shape,b.shape)
-    data.scan('/usr/whz/vsr_data', None, '/usr/whz/EDVSRGAN_root/img_list.csv')
-    vsr.detailize_data_file('/usr/whz/EDVSRGAN_root/img_list.csv', '/usr/whz/EDVSRGAN_root/img_detail_list.csv')
+    ########### generating data table
+    # data.scan('/usr/whz/vsr_data', None, '/usr/whz/EDVSRGAN_root/img_list.csv')
+    # vsr.detailize_data_file('/usr/whz/EDVSRGAN_root/img_list.csv', '/usr/whz/EDVSRGAN_root/img_detail_list.csv')
+
+    ################ filtering dataset
+    fmt = '/usr/whz/EDVSRGAN_root/saved_models/pretrain_filter/{}.csv'
+    paths = ('test_results','valset','trainset')
+    paths = [fmt.format(x) for x in paths]
+    filter_ds(paths, 7)
