@@ -87,5 +87,8 @@ def ceil_by_factor(a, factor):
     rem = a % factor
     return a+(factor-rem)
 
+def array_map(arr, fn):
+    return np.array(list(map(fn,arr)))
+
 if __name__ == '__main__':
     scan('/usr/whz/bmp_train_data',None,'/usr/whz/EDVSRGAN_root/data_list.csv')

@@ -1,5 +1,6 @@
-import exp
 from common_imports import *
+import exp
+# from . import data
 
 def offline_performance(a_b_pairs, ds_names, sp_border):
     """
@@ -39,5 +40,3 @@ def detailize_data_file(file_path, save_path, level=2): # specific for edvsr
         df[f'level_{i}'] = df['path'].map(lambda x: x.split(r'/')[-3+i])
     df.to_csv(save_path, index=False)
 
-if __name__ == '__main__':
-    detailize_data_file('/usr/whz/EDVSRGAN_root/data_list.csv','/usr/whz/EDVSRGAN_root/dtable.csv')

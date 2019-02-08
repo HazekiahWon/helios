@@ -1,4 +1,4 @@
-from common_imports import *
+from .common_imports import *
 
 def adjustible_gradient_clipping(optimizer, starter_lr, lr, loss, vars, max_norm):
     # TODO i just cancel the start_lr*

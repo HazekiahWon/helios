@@ -1,7 +1,7 @@
 from common_imports import *
-from PIL import Image
+# from PIL import Image
 from scipy.misc import toimage,fromimage,imread,imsave
-from scipy.ndimage import zoom
+# from scipy.ndimage import zoom
 ycbcr_from_rgb = np.array([[    65.481,   128.553,    24.966],
                            [   -37.797,   -74.203,   112.0  ],
                            [   112.0  ,   -93.786,   -18.214]])/255.
@@ -137,7 +137,7 @@ def resize_image(arr, size, interp='bicubic', set_int=True, save_path=None):
     im = toimage(arr, mode=mode) # PIL.Image
 
     func = {'nearest': 0, 'lanczos': 1, 'bilinear': 2, 'bicubic': 3, 'cubic': 3}
-    imnew = im.resize(size, resample=func[interp]) # PIL.Image.resize
+    imnew = im.resize(size[::-1], resample=func[interp]) # PIL.Image.resize
 
     if save_path is not None:
         imnew.save(save_path)
@@ -161,3 +161,15 @@ def read_image(path):
 
 def save_image(path, im):
     imsave(path, im)
+
+def crop_offsets(in_size, out_size):
+    """
+
+    :param in_size:
+    :param out_size:
+    :return: single offsets, a:b,c:d
+    """
+    a,c = [np.random.randint(0, x-y) for x,y in zip(in_size,out_size)]
+    b,d = [x+y for x,y in zip((a,c),out_size)]
+
+    return a,b,c,d
