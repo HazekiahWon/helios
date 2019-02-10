@@ -1,6 +1,8 @@
-from common_imports import *
+from .common_imports import *
 # from PIL import Image
 from scipy.misc import toimage,fromimage,imread,imsave
+from scipy import signal
+from .tools import get_shape
 # from scipy.ndimage import zoom
 ycbcr_from_rgb = np.array([[    65.481,   128.553,    24.966],
                            [   -37.797,   -74.203,   112.0  ],
@@ -173,3 +175,33 @@ def crop_offsets(in_size, out_size):
     b,d = [x+y for x,y in zip((a,c),out_size)]
 
     return a,b,c,d
+
+
+def gauss_kernel2d(ksize, stddev=None):
+    """
+
+    :param ksize:
+    :param stddev:
+    :return:
+    plot
+    -------
+    >>> import matplotlib.pyplot as plt
+    >>> plt.imshow(gauss_kernel2d(21), interpolation='none')
+    Reference
+    -------
+    https://stackoverflow.com/questions/29731726/how-to-calculate-a-gaussian-kernel-matrix-efficiently-in-numpy
+    """
+    if stddev is None: stddev = (ksize - 1) / 3  # 3sigma for normal distr.
+    gkern1d = signal.gaussian(ksize, std=stddev).reshape(ksize, 1)
+    gkern2d = np.outer(gkern1d, gkern1d)
+    return gkern2d
+
+def gauss_deconv(inp,ksize,stride):
+    # 不失真的话ksize=stride
+    # ksize=stride*reception, reception is unit length of an object
+    b,h,w,c = get_shape(inp)
+    k = gauss_kernel2d(ksize).astype(np.float32).reshape((ksize,ksize,1,1))
+    c_out = c_in = c
+    k = tf.tile(k, (1, 1, c_out, c_in))
+    return tf.nn.conv2d_transpose(inp, k,
+                                  [b,h*stride,w*stride,c], [1,stride,stride,1], padding='SAME')
