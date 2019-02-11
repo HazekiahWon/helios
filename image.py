@@ -196,7 +196,7 @@ def gauss_kernel2d(ksize, stddev=None):
     gkern2d = np.outer(gkern1d, gkern1d)
     return gkern2d
 
-def gauss_deconv(inp,ksize,stride):
+def gauss_deconv2d(inp, ksize, stride):
     # 不失真的话ksize=stride
     # ksize=stride*reception, reception is unit length of an object
     b,h,w,c = get_shape(inp)
@@ -205,3 +205,14 @@ def gauss_deconv(inp,ksize,stride):
     k = tf.tile(k, (1, 1, c_out, c_in))
     return tf.nn.conv2d_transpose(inp, k,
                                   [b,h*stride,w*stride,c], [1,stride,stride,1], padding='SAME')
+
+def gauss_deconv3d(inp, ksize, stride):
+    # 不失真的话ksize=stride
+    # ksize=stride*reception, reception is unit length of an object
+    b,t,h,w,c = get_shape(inp)
+    k = gauss_kernel2d(ksize).astype(np.float32).reshape((1,ksize,ksize,1,1)) # t,h,w,out,in
+    c_out = c_in = c
+    k = tf.tile(k, (1, 1, 1, c_out, c_in))
+    return tf.nn.conv3d_transpose(inp, k,
+                                  [b,t,h*stride,w*stride,c], [1,1,stride,stride,1], padding='SAME')
+
