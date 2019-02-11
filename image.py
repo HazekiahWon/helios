@@ -191,18 +191,21 @@ def gauss_kernel2d(ksize, stddev=None):
     -------
     https://stackoverflow.com/questions/29731726/how-to-calculate-a-gaussian-kernel-matrix-efficiently-in-numpy
     """
-    if stddev is None: stddev = (ksize - 1) / 3  # 3sigma for normal distr.
+    if stddev is None: stddev = (ksize - 1)   # 3sigma for normal distr.
     gkern1d = signal.gaussian(ksize, std=stddev).reshape(ksize, 1)
     gkern2d = np.outer(gkern1d, gkern1d)
     return gkern2d
 
-def gauss_deconv2d(inp, ksize, stride):
+def gauss_deconv2d(inp, ksize, stride, name):
     # 不失真的话ksize=stride
     # ksize=stride*reception, reception is unit length of an object
     b,h,w,c = get_shape(inp)
     k = gauss_kernel2d(ksize).astype(np.float32).reshape((ksize,ksize,1,1))
     c_out = c_in = c
-    k = tf.tile(k, (1, 1, c_out, c_in))
+    k = np.tile(k, (1, 1, c_out, c_in))
+    # print(k.shape)
+    # k = tf.get_variable(name, initializer=k)
+    return tf.layers.conv2d_transpose(inp, c, ksize, stride, padding='same', kernel_initializer=tf.constant_initializer(k))
     return tf.nn.conv2d_transpose(inp, k,
                                   [b,h*stride,w*stride,c], [1,stride,stride,1], padding='SAME')
 
