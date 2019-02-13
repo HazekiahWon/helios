@@ -22,6 +22,25 @@ def filter_ds(paths, seq_len, amp=4.):
     df.to_csv('diversity_considered.csv', index=False)
 
     dft = df.name.map(lambda x: x.find('Venice') != -1 or x.find('India') != -1)
+
+    # visited = list()
+    # mapping = dict()
+    # for idx, k in enumerate(names):
+    #     if k in visited: continue
+    #     visited.append(idx)
+    #     for i in range(4, 0, -1):
+    #         if i >= len(k): continue
+    #         # print(k)
+    #         nk = k[:-i]
+    #         print(k, nk)
+    #         l = len(nk)
+    #         for j in range(idx + 1, len(names)):
+    #             if j in visited: continue
+    #             if names[j][:l] == nk:
+    #                 mapping[names[j]] = nk
+    #                 mapping[k] = nk
+    #                 visited.append(j)
+
     ind = df[dft].index
     dind = np.random.choice(ind, len(ind) // 2, replace=False)
     df = df.drop(index=dind)
