@@ -58,6 +58,19 @@ def filter_ds(paths, seq_len, amp=4.):
     train_set.to_csv(train_path, index=False)
     print(f'trainset psnr {train_set.psnr.mean()}, valset psnr {val_set.psnr.mean()}')
 
+def seperate_train_val(paths):
+    read_path, val_path, train_path = paths
+    df2 = pd.read_csv(read_path)
+    df2.sort_values('score', inplace=True)
+    selected = df2[:230]
+    print(selected.name.unique().shape)
+    val_indices = np.random.choice(selected.index, 30, replace=False)
+    train_indices = list(set(selected.index) - set(val_indices))
+    val_set = df2.loc[val_indices]
+    train_set = df2.loc[train_indices]
+    val_set.to_csv(val_path, index=False)
+    train_set.to_csv(train_path, index=False)
+    print(f'trainset psnr {train_set.psnr.mean()}, valset psnr {val_set.psnr.mean()}')
 if __name__ == '__main__':
 
     # a_fmt = r'/usr/whz/EDVSRGAN_root/VSR-DUF-master/inputs/G/{}/*.png'
@@ -91,3 +104,9 @@ if __name__ == '__main__':
     # paths = ('test_results','valset','trainset')
     # paths = [fmt.format(x) for x in paths]
     # filter_ds(paths, 7)
+
+    ######################### sep train val
+    # fmt = '/usr/whz/EDVSRGAN_root/saved_models/val_233444_20190212/{}.csv'
+    # paths = ('diversity', 'valset', 'trainset')
+    # paths = [fmt.format(x) for x in paths]
+    # seperate_train_val(paths)

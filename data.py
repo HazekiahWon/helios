@@ -1,5 +1,6 @@
 from common_imports import *
 import files
+from shutil import move
 def save_pkl(fname, data):
     with open(fname, 'wb') as f:
         pickle.dump(data, f)
@@ -17,6 +18,9 @@ def save_npy(fname,data):
 
 def check_dist(a,b,minimum=0.01):
     return np.sum(np.abs(a-b)>minimum)
+
+def move_to_folder(srcls, des):
+    [move(s, des) for s in srcls]
 
 def scan(folder, format=None, save_path=None, relative=False):
     """

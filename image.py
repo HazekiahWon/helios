@@ -11,6 +11,13 @@ ycbcr_from_rgb = np.array([[    65.481,   128.553,    24.966],
 rgb_from_ycbcr = np.linalg.inv(ycbcr_from_rgb)
 
 origOffset = np.array([16.0, 128.0, 128.0]) # (3,)
+def extract_image_patches(x, k):
+    b,H,W,_ = get_shape(x)
+    p = tf.extract_image_patches(x,
+                                 ksizes=[1, k, k, 1], strides=[1, k, k, 1], rates=[1, 1, 1, 1], padding='SAME')
+    b, h, w, c = get_shape(p)
+    p = tf.reshape(p, (b*h*w, k, k, c // (k ** 2)))
+    return p
 
 def rgb2ycbcr(inputs):
     """
