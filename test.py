@@ -83,8 +83,9 @@ if __name__ == '__main__':
     # a, b = [x.get_next() for x in it]
     # print(a.shape,b.shape)
     ########### generating data table
-    data.scan('/usr/whz/vsr_data', None, '/usr/whz/EDVSRGAN_root/img_list.csv')
-    vsr.detailize_data_file('/usr/whz/EDVSRGAN_root/img_list.csv', '/usr/whz/EDVSRGAN_root/img_detail_list.csv')
+    # data.scan('/usr/whz/vsr_data', None, '/usr/whz/EDVSRGAN_root/img_list.csv')
+    data.scan(r'D:\helios\facetype\脸型', None, r'D:\helios\facetype\img_list.csv')
+    vsr.detailize_data_file(r'D:\helios\facetype\img_list.csv', r'D:\helios\facetype\img_list.csv', level=1)
 
     ################ filtering dataset
     # fmt = '/usr/whz/EDVSRGAN_root/saved_models/pretrain_filter/{}.csv'
