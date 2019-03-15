@@ -54,7 +54,7 @@ def add_optimizer(optimizer, global_step, loss, ema_decay):
         # Also updates moving averages after each update step
         # This is the optimize call instead of traditional adam_optimize one.
         # assert tuple(self.variables) == variables  # Verify all trainable variables are being averaged
-        ema = tf.train.ExponentialMovingAverage(decay=ema_decay)
+        ema = tf.run.ExponentialMovingAverage(decay=ema_decay)
         optimize = ema.apply(variables)
 
     return optimize
@@ -85,7 +85,7 @@ def add_optimizer_gpu(optimizer,global_step, grads, ema_decay):
         # Also updates moving averages after each update step
         # This is the optimize call instead of traditional adam_optimize one.
         # assert tuple(self.variables) == variables  # Verify all trainable variables are being averaged
-        ema = tf.train.ExponentialMovingAverage(decay=ema_decay)
+        ema = tf.run.ExponentialMovingAverage(decay=ema_decay)
         optimize = ema.apply(variables)
 
     return optimize
@@ -109,3 +109,38 @@ def get_shape(tensor):
             shape_list[idx] = shape[idx]
 
     return shape_list
+
+def poly_lr_update(start, end, dur, cur, power=1.):
+    diff = start-end
+    ratio = cur/(dur-1) # [0,1]
+    ratio = ratio**power
+    new_lr = start+ratio*diff
+    return new_lr
+
+def latest_ckpt_finder(save_dir):
+    all_exps = glob.glob(save_dir + '/*')
+
+    ctimes = [os.path.getctime(x) for x in all_exps if not x.split('/')[-1].startswith('test')]
+
+    idx = ctimes.index(max(ctimes))
+    matched = all_exps[idx].split('/')[-1]
+    # print(matched)
+    return matched
+
+def add_custom_summ(writer, tagname, tagvalue, iters):
+    summ = tf.Summary(value=[tf.Summary.Value(tag=tagname, simple_value=tagvalue), ])
+    writer.add_summary(summ, iters)
+
+def add_summs(writer, names, values, iters):
+    for name, value in zip(names, values):
+        add_custom_summ(writer, name, value, iters)
+
+def floor_by(amount, factor):
+    rem = amount % factor
+    return amount-rem
+
+def ceil_by(amount, factor):
+    rem = amount % factor
+    pad = factor-rem
+    full = pad+amount
+    return full, pad
